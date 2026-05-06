@@ -32,7 +32,7 @@
     });
     //Receiving Data
     ipcRenderer.on("video:durationAnalyzed", (event, duration)=>{
-        document.getElementById("results").textContent = `video Duration: ${duration} section`;
+        document.getElementById("results").textContent = `Alex Hargrove's Video Duration: ${duration} seconds`;
     });
     ipcRenderer.on("video:error", (event, error)=>{
         document.getElementById("results").textContent = `Error: ${error}`;
