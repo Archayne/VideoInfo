@@ -1,12 +1,42 @@
 const electron = require('electron');
-const { app, BrowserWindow } = electron; //const app = electron.app;
+const ffmpeg = require('fluent-ffmpeg');
+const { app, BrowserWindow, ipcMain } = electron; //const app = electron.app;
+const remote = require('@electron/remote/main');
+remote.initialize();
+
 app.on('ready', ()=>{
     console.log("App is ready");
     const mainWindow = new BrowserWindow({
+        height: 800,
+        width: 600,
         webPreferences:{
             nodeIntegration: true,
-            contextIsolation: false
+            contextIsolation: false,
+            enableRemoteModule: true
         }
     });
+    remote.enable(mainWindow.webContents);
     mainWindow.loadURL(`file://${__dirname}/index.html`);
 });
+ipcMain.on("video:submit", (event, filePath)=>{
+    console.log("Processing video information for file: ", filePath);
+    ffmpeg.ffprobe(filePath, (err, metadata)=>{
+        if(err){
+            console.log("FFprobe error: ", err);
+            event.reply("video:error", err);
+            return;
+        }
+        if(!metadata || !metadata.format){
+            console.log("Metadata error: ", metadata);
+            event.reply("video:error", 'Invalid metadata');
+            return;
+        }
+        const duration = metadata.format.duration;
+        console.log("Duration: ", duration)
+        event.reply('video:durationAnalyzed', duration)
+    });
+});
+// Install/Setup Instructions
+//npm install electron
+//npm install @electron/remote
+//npm install fluent-ffmpeg
